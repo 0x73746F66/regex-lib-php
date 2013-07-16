@@ -76,16 +76,16 @@ class Pattern_Regex {
     public function __get( $name )
     {
         $property = ( property_exists( $this, $name ) ? $name : "empty" );
-        return $this->$property;
+        return static::$$property;
     }
-    private function __set( $name, $value ) {
+    public function __set( $name, $value ) {
         user_error("Can't set property: " . __CLASS__ . "->$name");
     }
     public function __isset( $property )
     {
         return property_exists( $this , $property );
     }
-    private function __unset( $name )
+    public function __unset( $name )
     {
         user_error("Can't unset property: " . __CLASS__ . "->$name");
     }
