@@ -6,7 +6,6 @@
  * @version     0.4
  * @since       2013-07-17
  * 
- * @property-read string $email email address, adheres directly to the specification for email address naming. It allows for everything from ipaddress and country-code domains, to very rare characters in the username.
  * @property-read string $alphaNumeric alphaNumeric characters only
  * @property-read string $dateBasic Basic date format YYYY-MM-DD
  * @property-read string $date Basic date format YYYY-MM-DD Checks that the year is numeric and starts with 19 or 20, the month is numeric and between 01-12, and the day is numeric between 01-29, or 30 if the month value is anything other than 02 if not a leap year, or 31 if the month value is one of 01,03,05,07,08,10, or 12.
@@ -40,7 +39,6 @@
  * @property-read string $twitterProfile 
  * @property-read string $facebookUsername 
  * 
- * @method string getEmail() email address, adheres directly to the specification for email address naming. It allows for everything from ipaddress and country-code domains, to very rare characters in the username.
  * @method string getAlphaNumeric() alphaNumeric characters only
  * @method string getDate() Basic date format YYYY-MM-DD Checks that the year is numeric and starts with 19 or 20, the month is numeric and between 01-12, and the day is numeric between 01-29, or 30 if the month value is anything other than 02 if not a leap year, or 31 if the month value is one of 01,03,05,07,08,10, or 12.
  * @method string getDateBasic() Basic date format YYYY-MM-DD with no further checks.
@@ -75,15 +73,6 @@
  * @method string getFacebookUsername() Facebook profile/username
  */
 class Pattern_Regex {
-    /**
-     * email address, adheres directly to the specification for email address naming. It allows for everything from ipaddress and country-code domains, to very rare characters in the username.
-     * 
-     * @var string
-     * @access private
-     * @static
-     * @see Pattern_Regex::email()
-     */
-    private static $email = "^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$";
     /**
      * alphaNumeric characters only
      * 
@@ -413,15 +402,6 @@ class Pattern_Regex {
     {
         user_error("Can't unset property: " . __CLASS__ . "->$name");
     }
-    /**
-     * email address, adheres directly to the specification for email address naming. It allows for everything from ipaddress and country-code domains, to very rare characters in the username.
-     * 
-     * @access public
-     * @static
-     * @uses Pattern_Regex::$email
-     * @return string regex <pre>^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$</pre>
-     */
-    public static function email() { return static::$email; }
     /**
      * alphaNumeric characters only
      * 
