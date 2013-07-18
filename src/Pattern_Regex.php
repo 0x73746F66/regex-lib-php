@@ -36,8 +36,10 @@
  * @property-read string $caPostcode Canada Post Codes
  * @property-read string $germanPostCode German Post Codes
  * @property-read string $jpPostCode Japan Post Codes
- * @property-read string $twitterProfile 
- * @property-read string $facebookUsername 
+ * @property-read string $hashTag Twitter style hash tags
+ * @property-read string $twitterProfileNoAt Twitter profile/username without &amp;
+ * @property-read string $twitterProfileWithAt Twitter profile/username with &amp;
+ * @property-read string $facebookUsername Facebook profile/username
  * 
  * @method string getAlphaNumeric() alphaNumeric characters only
  * @method string getDate() Basic date format YYYY-MM-DD Checks that the year is numeric and starts with 19 or 20, the month is numeric and between 01-12, and the day is numeric between 01-29, or 30 if the month value is anything other than 02 if not a leap year, or 31 if the month value is one of 01,03,05,07,08,10, or 12.
@@ -69,7 +71,9 @@
  * @method string getCaPostcode() Canada Post Codes
  * @method string getGermanPostCode() German Post Codes
  * @method string getJpPostCode() Japan Post Codes
- * @method string getTwitterProfile() Twitter profile/username
+ * @method string getHashTag() Twitter style hash tags
+ * @method string getTwitterProfileNoAt() Twitter profile/username without &amp;
+ * @method string getTwitterProfileWithAt() Twitter profile/username with &amp;
  * @method string getFacebookUsername() Facebook profile/username
  */
 class Pattern_Regex {
@@ -344,14 +348,32 @@ class Pattern_Regex {
      */
     private static $jpPostCode = "\d{3}-\d{4}";
     /**
-     * Twitter profile/username
+     * Twitter style hash tags
      * 
      * @var string
      * @access private
      * @static
-     * @see Pattern_Regex::twitterProfile()
+     * @see Pattern_Regex::hashTag()
      */
-    private static $twitterProfile = "^[A-Za-z0-9_]{1,15}$";
+    private static $hashTag = "(^|[^0-9A-Z&/]+)(#|\uFF03)([0-9A-Z_]*[A-Z_]+[a-z0-9_\\u00c0-\\u00d6\\u00d8-\\u00f6\\u00f8-\\u00ff]*)";
+    /**
+     * Twitter profile/username without &amp;
+     * 
+     * @var string
+     * @access private
+     * @static
+     * @see Pattern_Regex::twitterProfileNoAt()
+     */
+    private static $twitterProfileNoAt = "^[A-Za-z0-9_]{1,15}$";
+    /**
+     * Twitter profile/username with &amp;
+     * 
+     * @var string
+     * @access private
+     * @static
+     * @see Pattern_Regex::twitterProfileWithAt()
+     */
+    private static $twitterProfileWithAt = "/(?!\b)@[\w]{1,15}(?![\w])/";
     /**
      * Facebook profile/username
      * 
@@ -369,7 +391,7 @@ class Pattern_Regex {
      */
     private $empty = "";
     
-    public static function __callStatic($method, $params)
+    final public static function __callStatic($method, $params)
     {
         if ( "get" == substr($method,0,3) ) {
             $lowerMethod = strtolower( substr( $method, 3 , 1 ) ).substr( $method , 4 , strlen( $method ) );
@@ -378,7 +400,7 @@ class Pattern_Regex {
             return static::$$property;
         } else return "";
     }
-    public function __call($method, $params)
+    final public function __call($method, $params)
     {
         if ( "get" == substr($method,0,3) ) {
             $lowerMethod = strtolower( substr( $method, 3 , 1 ) ).substr( $method , 4 , strlen( $method ) );
@@ -386,19 +408,19 @@ class Pattern_Regex {
             return static::$$property;
         }
     }
-    public function __get( $name )
+    final public function __get( $name )
     {
         $property = ( property_exists( $this, $name ) ? $name : "empty" );
         return static::$$property;
     }
-    public function __set( $name, $value ) {
+    final public function __set( $name, $value ) {
         user_error("Can't set property: " . __CLASS__ . "->$name");
     }
-    public function __isset( $property )
+    final public function __isset( $property )
     {
         return property_exists( $this , $property );
     }
-    public function __unset( $name )
+    final public function __unset( $name )
     {
         user_error("Can't unset property: " . __CLASS__ . "->$name");
     }
@@ -409,14 +431,14 @@ class Pattern_Regex {
      * @static
      * @return string regex <pre>[a-zA-Z0-9]+</pre>
      */
-    public static function alphaNumeric() { return static::$alphaNumeric; }
+    final public static function alphaNumeric() { return static::$alphaNumeric; }
     /**
      * alphaNumeric characters only, with a specific length
      * 
      * @static
      * @return string variable regex
      */
-    public static function length($end,$start=1) { return "{".$start.",".$end."}"; }
+    final public static function length($end,$start=1) { return "{".$start.",".$end."}"; }
     /**
      * Basic date format YYYY-MM-DD
      * 
@@ -424,7 +446,7 @@ class Pattern_Regex {
      * @uses Pattern_Regex::$dateBasic
      * @return string regex <pre>[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])</pre>
      */
-    public static function dateBasic() { return static::$dateBasic; }
+    final public static function dateBasic() { return static::$dateBasic; }
     /**
      * Basic date format YYYY-MM-DD Checks that the year is numeric and starts with 19 or 20, the month is numeric and between 01-12, and the day is numeric between 01-29, or 30 if the month value is anything other than 02 if not a leap year, or 31 if the month value is one of 01,03,05,07,08,10, or 12.
      * 
@@ -433,7 +455,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>(?:19|20)(?:(?:[13579][26]|[02468][048])-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31))|(?:[0-9]{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:29|30))|(?:(?:0[13578]|1[02])-31)))</pre>
      */
-    public static function date() { return static::$date; }
+    final public static function date() { return static::$date; }
     /**
      * Alternate date format YYYY/MM/DD
      * 
@@ -442,7 +464,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9]{0,4}/[0-9]{0,2}/[0-9]{0,2}</pre>
      */
-    public static function dateAlt() { return static::$dateAlt; }
+    final public static function dateAlt() { return static::$dateAlt; }
     /**
      * Basic time format HH:MM:SS
      * 
@@ -451,7 +473,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}</pre>
      */
-    public static function time() { return static::$time; }
+    final public static function time() { return static::$time; }
     /**
      * Datetime according to W3C for input type="datetime". Matches the following: 1990-12-31T23:59:60Z or 1996-12-19T16:39:57-08:00
      * 
@@ -460,7 +482,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>/([0-2][0-9]{3})\-([0-1][0-9])\-([0-3][0-9])T([0-5][0-9])\:([0-5][0-9])\:([0-5][0-9])(Z|([\-\+]([0-1][0-9])\:00))/</pre>
      */
-    public static function datetime() { return static::$datetime; }
+    final public static function datetime() { return static::$datetime; }
     /**
      * Numeric values matching simple full or decimal numbers (2 decimal places)
      * 
@@ -469,7 +491,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[-+]?[0-9]*[.,]?[0-9]+</pre>
      */
-    public static function currency() { return static::$currency; }
+    final public static function currency() { return static::$currency; }
     /**
      * Password (UpperCase, LowerCase, Number/SpecialChar and min 8 Chars)
      * 
@@ -478,7 +500,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$</pre>
      */
-    public static function password() { return static::$password; }
+    final public static function password() { return static::$password; }
     /**
      * HEX Format is #CCC or #CCCCCC
      * 
@@ -487,7 +509,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$</pre>
      */
-    public static function hexColor() { return static::$hexColor; }
+    final public static function hexColor() { return static::$hexColor; }
     /**
      * ipv4 Address
      * 
@@ -496,7 +518,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$</pre>
      */
-    public static function ipv4() { return static::$ipv4; }
+    final public static function ipv4() { return static::$ipv4; }
     /**
      * ipv6 Address
      * 
@@ -505,7 +527,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>((^|:)([0-9a-fA-F]{0,4})){1,8}$</pre>
      */
-    public static function ipv6() { return static::$ipv6; }
+    final public static function ipv6() { return static::$ipv6; }
     /**
      * UUID A universally unique identifier standard by OSF (Open Software Foundation)
      * 
@@ -514,7 +536,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^[0-9A-Fa-f]{8}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{12}$</pre>
      */
-    public static function uuid() { return static::$uuid; }
+    final public static function uuid() { return static::$uuid; }
     /**
      * Latitude or Longitude
      * 
@@ -523,7 +545,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>-?\d{1,3}\.\d+</pre>
      */
-    public static function latitudeLongitude() { return static::$latitudeLongitude; }
+    final public static function latitudeLongitude() { return static::$latitudeLongitude; }
     /**
      * md5 Hash
      * 
@@ -532,7 +554,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9a-fA-F]{32}</pre>
      */
-    public static function md5Hash() { return static::$md5Hash; }
+    final public static function md5Hash() { return static::$md5Hash; }
     /**
      * Regular Credit Card checks if 16 numeric characters only.
      * 
@@ -541,7 +563,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9]{16}</pre>
      */
-    public static function creditCard() { return static::$creditCard; }
+    final public static function creditCard() { return static::$creditCard; }
     /**
      * American Express Credit Card
      * 
@@ -550,7 +572,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9]{4} *[0-9]{6} *[0-9]{5}</pre>
      */
-    public static function amex() { return static::$amex; }
+    final public static function amex() { return static::$amex; }
     /**
      * Diners Club Credit Card
      * 
@@ -559,7 +581,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^([30|36|38]{2})([0-9]{12})$</pre>
      */
-    public static function dinersClub() { return static::$dinersClub; }
+    final public static function dinersClub() { return static::$dinersClub; }
     /**
      * VISA Credit Card
      * 
@@ -568,7 +590,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^4[0-9]{12}(?:[0-9]{3})?$</pre>
      */
-    public static function visa() { return static::$visa; }
+    final public static function visa() { return static::$visa; }
     /**
      * Master Card Credit Card
      * 
@@ -577,7 +599,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^5[1-5][0-9]{14}$</pre>
      */
-    public static function masterCard() { return static::$masterCard; }
+    final public static function masterCard() { return static::$masterCard; }
     /**
      * Discover Credit Card
      * 
@@ -586,7 +608,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^6(?:011|5[0-9]{2})[0-9]{12}$</pre>
      */
-    public static function discover() { return static::$discover; }
+    final public static function discover() { return static::$discover; }
     /**
      * JCB Credit Card
      * 
@@ -595,7 +617,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^(?:2131|1800|35\d{3})\d{11}$</pre>
      */
-    public static function jcb() { return static::$jcb; }
+    final public static function jcb() { return static::$jcb; }
     /**
      * UK Post Code
      * 
@@ -604,7 +626,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[A-Za-z]{1,2}[0-9Rr][0-9A-Za-z]? [0-9][ABD-HJLNP-UW-Zabd-hjlnp-uw-z]{2}</pre>
      */
-    public static function ukPostCode() { return static::$ukPostCode; }
+    final public static function ukPostCode() { return static::$ukPostCode; }
     /**
      * UK Phone Numbers
      * 
@@ -613,7 +635,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^\s*\(?(020[7,8]{1}\)?[ ]?[1-9]{1}[0-9{2}[ ]?[0-9]{4})|(0[1-8]{1}[0-9]{3}\)?[ ]?[1-9]{1}[0-9]{2}[ ]?[0-9]{3})\s*$</pre>
      */
-    public static function ukPhoneNumber() { return static::$ukPhoneNumber; }
+    final public static function ukPhoneNumber() { return static::$ukPhoneNumber; }
     /**
      * Australian Post Codes
      * 
@@ -622,7 +644,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9]{4}</pre>
      */
-    public static function auPostCode() { return static::$auPostCode; }
+    final public static function auPostCode() { return static::$auPostCode; }
     /**
      * Australian Phone Numbers
      * 
@@ -631,7 +653,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>(^1300\d{6}$)|(^1800|1900|1902\d{6}$)|(^0[2|3|7|8]{1}[0-9]{8}$)|(^13\d{4}$)|(^04\d{2,3}\d{6}$)</pre>
      */
-    public static function auPhoneNumber() { return static::$auPhoneNumber; }
+    final public static function auPhoneNumber() { return static::$auPhoneNumber; }
     /**
      * USA Phone Numbers
      * 
@@ -640,7 +662,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>\d{3}[\-]\d{3}[\-]\d{4}</pre>
      */
-    public static function usPhoneNumber() { return static::$usPhoneNumber; }
+    final public static function usPhoneNumber() { return static::$usPhoneNumber; }
     /**
      * USA Post Codes
      * 
@@ -649,7 +671,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>(\d{5}([\-]\d{4})?)</pre>
      */
-    public static function usPostCode() { return static::$usPostCode; }
+    final public static function usPostCode() { return static::$usPostCode; }
     /**
      * Canada Post Codes
      * 
@@ -658,7 +680,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[A-Za-z][0-9][A-Za-z] [0-9][A-Za-z][0-9]</pre>
      */
-    public static function caPostcode() { return static::$caPostcode; }
+    final public static function caPostcode() { return static::$caPostcode; }
     /**
      * German Post Codes
      * 
@@ -667,7 +689,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>[0-9]{5}</pre>
      */
-    public static function germanPostCode() { return static::$germanPostCode; }
+    final public static function germanPostCode() { return static::$germanPostCode; }
     /**
      * Japan Post Codes
      * 
@@ -676,16 +698,34 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>\d{3}-\d{4}</pre>
      */
-    public static function jpPostCode() { return static::$jpPostCode; }
+    final public static function jpPostCode() { return static::$jpPostCode; }
     /**
-     * Twitter profile/username
+     * Twitter style hashtags
+     * 
+     * @static
+     * @uses Pattern_Regex::$hashTag
+     * @access public
+     * @return string regex <pre>/(?!\b)#[^\s\.,;'"]+/</pre>
+     */
+    final public static function hashTag() { return static::$hashTag; }
+    /**
+     * Twitter profile/username without &amp;
      * 
      * @static
      * @uses Pattern_Regex::$twitterProfile
      * @access public
-     * @return string regex <pre>^[A-Za-z0-9_]{1,15}$</pre>
+     * @return string regex <pre>(^|[^0-9A-Z&/]+)(#|\uFF03)([0-9A-Z_]*[A-Z_]+[a-z0-9_\\u00c0-\\u00d6\\u00d8-\\u00f6\\u00f8-\\u00ff]*)</pre>
      */
-    public static function twitterProfile() { return static::$twitterProfile; }
+    final public static function twitterProfileNoAt() { return static::$twitterProfileNoAt; }
+    /**
+     * Twitter profile/username with &amp;
+     * 
+     * @static
+     * @uses Pattern_Regex::$twitterProfile
+     * @access public
+     * @return string regex <pre>/(?!\b)@[\w]{1,15}(?![\w])/</pre>
+     */
+    final public static function twitterProfileWithAt() { return static::$twitterProfileWithAt; }
     /**
      * Facebook profile/username
      * 
@@ -694,7 +734,7 @@ class Pattern_Regex {
      * @access public
      * @return string regex <pre>^[a-z\d\.]{5,}$</pre>
      */
-    public static function facebookUsername() { return static::$facebookUsername; }
+    final public static function facebookUsername() { return static::$facebookUsername; }
 }
 
 ?>
