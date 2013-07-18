@@ -416,7 +416,7 @@ class Pattern_Regex {
      * @static
      * @return string variable regex
      */
-    public static function length($end,$start=1) { return "/^([a-zA-Z0-9_-]){".$start.",".$end."}$/"; }
+    public static function length($end,$start=1) { return "{".$start.",".$end."}"; }
     /**
      * Basic date format YYYY-MM-DD
      * 
